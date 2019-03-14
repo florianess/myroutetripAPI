@@ -16,6 +16,7 @@ type Trip {
     startDate: String!
     endDate: String!
     creator: User!
+    isPublic: Boolean!
     tripSteps: [Step]
 }
 
@@ -43,7 +44,7 @@ input StepInput {
 }
 
 type RootQuery {
-    trips: [Trip!]!
+    trips(id: String): [Trip!]!
     users: [User!]!
     steps(trip: String): [Step!]!
     logOrSign(idToken: String): String!

@@ -7,25 +7,27 @@ const Step = require('../../models/step');
 
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
+const customPopulate = query => query.populate({
+    path: 'creator',
+    populate: {
+        path: 'userTrips',
+        populate: { path: 'tripSteps'}
+    }
+})
+.populate({
+    path: 'tripSteps',
+    populate: { path: 'trip' }
+});
+
 module.exports = {
-    trips: async (args, req) => {
+    trips: async ({ id }, req) => {
+        console.log(req.isAuth, req.userId)
         let trips;
         if (!req.isAuth) {
-            trips = await Trip.find({ isPublic: true });
+            trips = await customPopulate(Trip.find({ isPublic: true, ...id && { _id: id }}));
         } else {
-            trips = await Trip.find({ $or: [{ isPublic: true }, { creator: req.userId }]})
+            trips = await customPopulate(Trip.find({ $or: [{ isPublic: true, ...id && { _id: id } }, { creator: req.userId, ...id && { _id: id } }]}));
         }
-        // await trips.populate({
-        //     path: 'creator',
-        //     populate: {
-        //         path: 'userTrips',
-        //         populate: { path: 'tripSteps'}
-        //     }
-        // })
-        // .populate({
-        //     path: 'tripSteps',
-        //     populate: { path: 'trip' }
-        // });
         return trips.map(t => ({ ...t._doc }))
     },
     users: async (args, req) => {

@@ -15,6 +15,10 @@ exports.isAuth = (req, res, next) => {
   try {
     decodedToken = jwt.verify(token, process.env.SECRET);
   } catch (err) {
+    console.log(err);
+    if (err.name === 'TokenExpiredError') {
+      res.status(412).send({ error: 'Token expired'})
+    }
     req.isAuth = false;
     return next();
   }

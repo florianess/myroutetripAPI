@@ -2,13 +2,22 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 const mongoose = require('mongoose');
-const cors = require('cors')
+const cors = require('cors');
+const AWS = require('aws-sdk');
 
 const graphqlSchema = require('./graphql/schema')
 const graphqlResolvers = require('./graphql/resolvers')
+const { isAuth } = require('./middleware');
+
+AWS.config.loadFromPath('./credentials.json');
+const s3 = new AWS.S3({
+    apiVersion: '2006-03-01',
+    params: {Bucket: 'myroutetrip'}
+})
 
 app.use(bodyParser.json());
-app.use(cors())
+app.use(cors());
+app.use(isAuth)
 
 app.use('/graphql', graphqlHttp({
     schema: graphqlSchema,
